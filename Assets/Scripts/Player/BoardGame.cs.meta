@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 7c4856c58025b054eb28141b5c5342f5
+timeCreated: 1558511270
+licenseType: Store
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - cellPrefab: {fileID: 1466943768581836, guid: 94ff07b7019f79d48a6065add772ca39,
+      type: 2}
+  - player: {fileID: 1880514443833676, guid: 166b760cb1596c14e9f584ef3522d63b, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,0 +1,79 @@
+# Unity generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+MemoryCaptures/
+ExportedObj/
+
+# Unity generated files
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.apk
+*.aab
+*.app
+*.unitypackage
+sysinfo.txt
+crashlytics-build.properties
+~UnityDirMonSyncFile~*
+
+# IDE and local tooling
+.vs/
+.vscode/
+.idea/
+.gradle/
+.consulo/
+/.agents/
+/.plastic/
+/.token-optimizer/
+/ignore.conf
+
+# Generated/local workspace artifacts
+/tmp/
+/output/
+*.log
+*.bak
+*.backup
+
+# Project documentation and reference files excluded by request
+*.md
+*.MD
+*.md.meta
+*.MD.meta
+*.markdown
+*.MARKDOWN
+*.markdown.meta
+*.MARKDOWN.meta
+*.pdf
+*.PDF
+*.pdf.meta
+*.PDF.meta
+
+# OS files
+.DS_Store
+.DS_Store*
+Thumbs.db
+Desktop.ini
+
+# Unity/Plastic/Addressables local artifacts
+**/Assets/AssetStoreTools/
+Assets/Plugins/PlasticSCM*/
+**/Assets/AddressableAssetsData/*/*.bin*
+Assets/StreamingAssets/aa.meta
+Assets/StreamingAssets/*/aa/

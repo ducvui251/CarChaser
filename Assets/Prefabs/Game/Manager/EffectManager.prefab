@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8366918808173898811
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8366918808173898788}
+  - component: {fileID: 8366918808173898789}
+  m_Layer: 0
+  m_Name: EffectManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8366918808173898788
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8366918808173898811}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -35.9375, y: -129.95312, z: 164.65625}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8366918808173898789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8366918808173898811}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c78fdb37de8229a4481f7dcf75a8b34a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cam: {fileID: 0}
+  coin: {fileID: 179808, guid: 1869a4a3f988cec4c95e82090dcb3420, type: 3}
+  carExplosion: {fileID: 1779082356159484, guid: 133648d3acc64b8408294969809befe6,
+    type: 3}
+  grenadeExplosion: {fileID: 4879920316518977260, guid: d1063e7c3b96a9d4cb9393d4b49f916e,
+    type: 3}
+  coinCollectedEffect: {fileID: 197194, guid: 53e38ce886954414b94b5d800cfdbb10, type: 3}
+  fireSpark: {fileID: 6180662681893576770, guid: 371799c34fdf82f42a18d9d78d8605a4,
+    type: 3}
+  impactSpark: {fileID: 9699739590311421, guid: c547d88f493bdc840be81249acaf0bd9,
+    type: 3}
