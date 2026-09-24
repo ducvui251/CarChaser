@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System;
 
-namespace CrashyChasy
+namespace CarChaser
 {
 
     public class DailyRewardController : MonoBehaviour

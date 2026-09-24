@@ -1,10 +1,10 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-namespace CrashyChasy
+namespace CarChaser
 {
     public class CharacterScroller : MonoBehaviour
     {

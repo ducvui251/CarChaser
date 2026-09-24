@@ -1,10 +1,10 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 //This class will implement simple AI which chasing the target
 
-namespace CrashyChasy
+namespace CarChaser
 {
    
     public class EnemyController : CarController

@@ -1,8 +1,8 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CrashyChasy
+namespace CarChaser
 {
     public class GroundController : MonoBehaviour
     {
@@ -396,6 +396,16 @@ namespace CrashyChasy
         {
             yield return new WaitForSeconds(0.05f);
 
+            float remainingWait = 2f;
+            while ((GameManager.Instance == null || GameManager.Instance.playerController == null) && remainingWait > 0f)
+            {
+                remainingWait -= Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            if (GameManager.Instance == null || GameManager.Instance.playerController == null)
+                yield break;
+
             if (currentOffset != Vector3.zero)
             {
                 transform.position = GameManager.Instance.playerController.transform.position + currentOffset;
@@ -495,6 +505,5 @@ namespace CrashyChasy
         }
     }
 }
-
 
 

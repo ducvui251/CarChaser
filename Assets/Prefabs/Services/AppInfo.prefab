@@ -43,17 +43,13 @@ MonoBehaviour:
   APP_NAME: '[YOUR_APP_NAME]'
   APPSTORE_ID: '[YOUR_APPSTORE_ID'
   BUNDLE_ID: '[YOUR_BUNDLE_ID]'
-  APPSTORE_LINK: itms-apps://itunes.apple.com/app/id
-  PLAYSTORE_LINK: market://details?id=
   APPSTORE_SHARE_LINK: https://itunes.apple.com/app/id
   PLAYSTORE_SHARE_LINK: https://play.google.com/store/apps/details?id=
   APPSTORE_HOMEPAGE: '[YOUR_APPSTORE_PUBLISHER_LINK]'
   PLAYSTORE_HOMEPAGE: '[YOUR_GOOGLEPLAY_PUBLISHER_NAME]'
   FACEBOOK_ID: '[YOUR_FACEBOOK_PAGE_ID]'
-  TWITTER_NAME: '[YOUR_TWITTER_PAGE_NAME]'
   SUPPORT_EMAIL: '[YOUR_SUPPORT_EMAIL]'
   FACEBOOK_LINK: https://facebook.com/
-  TWITTER_LINK: https://twitter.com/
   targetFrameRate: 60
   clearPlayerPrefs: 0
 --- !u!1001 &100100000

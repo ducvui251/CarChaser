@@ -1,12 +1,10 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.IO;
 using UnityEngine.SceneManagement;
-using System.Text.RegularExpressions;
 using System;
-using UnityEngine.Networking;
 
-namespace CrashyChasy
+namespace CarChaser
 {
     public static class Utilities
     {
@@ -31,20 +29,6 @@ namespace CrashyChasy
             SceneManager.LoadScene(sceneName);
         }
 
-        public static void RateApp()
-        {
-            switch (Application.platform)
-            {
-                case RuntimePlatform.IPhonePlayer:
-                    Application.OpenURL(AppInfo.Instance.APPSTORE_LINK);
-                    break;
-        			
-                case RuntimePlatform.Android:
-                    Application.OpenURL(AppInfo.Instance.PLAYSTORE_LINK);
-                    break;
-            }
-        }
-
         public static void ShowMoreGames()
         {
             switch (Application.platform)
@@ -64,11 +48,6 @@ namespace CrashyChasy
             Application.OpenURL(AppInfo.Instance.FACEBOOK_LINK);
         }
 
-        public static void OpenTwitterPage()
-        {
-            Application.OpenURL(AppInfo.Instance.TWITTER_LINK);
-        }
-
         public static void ContactUs()
         {
             string email = AppInfo.Instance.SUPPORT_EMAIL;
@@ -79,7 +58,7 @@ namespace CrashyChasy
 
         public static string EscapeURL(string url)
         {
-            return UnityWebRequest.EscapeURL(url).Replace("+", "%20");
+            return Uri.EscapeDataString(url);
         }
 
         public static int[] GenerateShuffleIndices(int length)

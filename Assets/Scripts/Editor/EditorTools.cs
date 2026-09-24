@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.Collections;
 
-namespace CrashyChasy
+namespace CarChaser
 {
     public class EditorTools
     {
@@ -11,6 +11,18 @@ namespace CrashyChasy
         {
             PlayerPrefs.DeleteAll();
             Debug.Log("*** PlayerPrefs was reset! ***");
+        }
+
+        [MenuItem("Tools/Reset High Score", false)]
+        public static void ResetHighScore()
+        {
+            PlayerPrefs.DeleteKey("HIGHSCORE");
+            PlayerPrefs.Save();
+            if (ScoreManager.Instance != null)
+            {
+                ScoreManager.Instance.ResetHighScore();
+            }
+            Debug.Log("*** High Score was reset to 0! ***");
         }
     }
 }

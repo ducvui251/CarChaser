@@ -1,8 +1,8 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CrashyChasy
+namespace CarChaser
 {
     [System.Serializable]
     public class Sound

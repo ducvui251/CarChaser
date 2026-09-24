@@ -1,17 +1,15 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections;
 using System;
 
-#if EASY_MOBILE
-using EasyMobile;
-#endif
-
-namespace CrashyChasy
+namespace CarChaser
 {
     public class UIManager : MonoBehaviour
     {
+        public static UIManager Instance { get; private set; }
+
         [Header("Object References")]
         public GameObject mainCanvas;
         public GameObject characterSelectionUI;
@@ -34,45 +32,63 @@ namespace CrashyChasy
         public GameObject musicOffBtn;
         public GameObject[] hearts;
         public GameObject revivalUI;
-
-        [Header("Premium Features Buttons")]
-        public GameObject watchRewardedAdBtn;
-        public GameObject leaderboardBtn;
-        public GameObject achievementBtn;
-        public GameObject shareBtn;
-        public GameObject iapPurchaseBtn;
-        public GameObject removeAdsBtn;
-        public GameObject restorePurchaseBtn;
-
-        [Header("In-App Purchase Store")]
-        public GameObject storeUI;
-
-        [Header("Sharing-Specific")]
-        public GameObject shareUI;
-        public ShareUIController shareUIController;
-
+        private Text revivalBestScore;
         Animator scoreAnimator;
         Animator dailyRewardAnimator;
-        bool isWatchAdsForCoinBtnActive;
-
         private int currentHeartIndex;
+        private Transform bestScoreOriginalParent;
+        private bool bestScoreInRevivalPanel;
+        private int bestScoreOriginalFontSize;
+        private Color bestScoreOriginalColor;
+        private TextAnchor bestScoreOriginalAlignment;
+        private HorizontalWrapMode bestScoreOriginalHorizontalOverflow;
+        private VerticalWrapMode bestScoreOriginalVerticalOverflow;
+        private Vector2 bestScoreOriginalAnchorMin;
+        private Vector2 bestScoreOriginalAnchorMax;
+        private Vector2 bestScoreOriginalPivot;
+        private Vector2 bestScoreOriginalSizeDelta;
+        private Vector2 bestScoreOriginalAnchoredPosition;
+        private RectTransform revivalPromptRect;
+        private const int RevivalTextFontSize = 32;
+        private Vector2 revivalPromptOriginalAnchorMin;
+        private Vector2 revivalPromptOriginalAnchorMax;
+        private Vector2 revivalPromptOriginalPivot;
+        private Vector2 revivalPromptOriginalSizeDelta;
+        private Vector2 revivalPromptOriginalAnchoredPosition;
+        private int revivalPromptOriginalFontSize;
+        private TextAnchor revivalPromptOriginalAlignment;
+        private HorizontalWrapMode revivalPromptOriginalHorizontalOverflow;
+        private VerticalWrapMode revivalPromptOriginalVerticalOverflow;
+        private bool revivalPromptLayoutCached;
 
         void OnEnable()
         {
+            if (Instance == null)
+                Instance = this;
+            else if (Instance != this)
+                Destroy(gameObject);
+
             GameManager.GameStateChanged += GameManager_GameStateChanged;
+            GameManager.RevivalGameEvent += OnPlayerRevived;
             ScoreManager.ScoreUpdated += OnScoreUpdated;
+            ScoreManager.HighscoreUpdated += OnHighscoreUpdated;
             PlayerController.PlayerTakeDamage += OnPlayerTakeDamage;
             PlayerController.PlayerDied += OnPlayerDied;
-        
+
         }
 
         void OnDisable()
         {
+            if (Instance == this)
+                Instance = null;
+
             GameManager.GameStateChanged -= GameManager_GameStateChanged;
+            GameManager.RevivalGameEvent -= OnPlayerRevived;
             ScoreManager.ScoreUpdated -= OnScoreUpdated;
+            ScoreManager.HighscoreUpdated -= OnHighscoreUpdated;
             PlayerController.PlayerTakeDamage -= OnPlayerTakeDamage;
             PlayerController.PlayerDied -= OnPlayerDied;
-           
+
         }
 
         // Use this for initialization
@@ -86,18 +102,70 @@ namespace CrashyChasy
 
         private void InitializeValue()
         {
-            scoreAnimator = score.GetComponent<Animator>();
+            scoreAnimator = score != null ? score.GetComponent<Animator>() : null;
+            if (scoreAnimator != null)
+            {
+                scoreAnimator.enabled = false;
+            }
+            if (score != null)
+            {
+                score.rectTransform.localScale = Vector3.one;
+            }
+            if (bestScore != null)
+            {
+                bestScore.rectTransform.localScale = Vector3.one;
+                bestScoreOriginalParent = bestScore.transform.parent;
+                bestScoreInRevivalPanel = false;
+                bestScoreOriginalFontSize = bestScore.fontSize;
+                bestScoreOriginalColor = bestScore.color;
+                bestScoreOriginalAlignment = bestScore.alignment;
+                bestScoreOriginalHorizontalOverflow = bestScore.horizontalOverflow;
+                bestScoreOriginalVerticalOverflow = bestScore.verticalOverflow;
+                bestScoreOriginalAnchorMin = bestScore.rectTransform.anchorMin;
+                bestScoreOriginalAnchorMax = bestScore.rectTransform.anchorMax;
+                bestScoreOriginalPivot = bestScore.rectTransform.pivot;
+                bestScoreOriginalSizeDelta = bestScore.rectTransform.sizeDelta;
+                bestScoreOriginalAnchoredPosition = bestScore.rectTransform.anchoredPosition;
+            }
+            CacheRevivalPromptLayout();
             dailyRewardAnimator = dailyRewardBtn.GetComponent<Animator>();
 
-           
+            UpdateScoreDisplay();
+        }
+
+        public void UpdateScoreDisplay()
+        {
+            if (ScoreManager.Instance != null)
+            {
+                if (score != null)
+                {
+                    string scoreStr = ScoreManager.Instance.Score.ToString();
+                    if (score.text != scoreStr)
+                        score.text = scoreStr;
+                }
+                if (bestScore != null)
+                {
+                    string bestStr = ScoreManager.Instance.HighScore.ToString();
+                    string bestDisplay = bestScoreInRevivalPanel ? $"BEST SCORE: {bestStr}" : bestStr;
+                    if (bestScore.text != bestDisplay)
+                        bestScore.text = bestDisplay;
+                }
+                if (revivalBestScore != null)
+                    revivalBestScore.text = $"BEST SCORE: {ScoreManager.Instance.HighScore}";
+            }
+
+            if (CoinManager.Instance != null && coinText != null)
+            {
+                string coinStr = CoinManager.Instance.Coins.ToString();
+                if (coinText.text != coinStr)
+                    coinText.text = coinStr;
+            }
         }
 
         // Update is called once per frame
         void Update()
         {
-            score.text = ScoreManager.Instance.Score.ToString();
-            bestScore.text = ScoreManager.Instance.HighScore.ToString();
-            coinText.text = CoinManager.Instance.Coins.ToString();
+            UpdateScoreDisplay();
 
             if (!DailyRewardController.Instance.disable && dailyRewardBtn.gameObject.activeInHierarchy)
             {
@@ -131,14 +199,13 @@ namespace CrashyChasy
                 //Show game UI
                 ShowGameUI();
             }
-            else if (newState == GameState.PreGameOver)
-            {
-                // Before game over, i.e. game potentially will be recovered
-                Invoke("ShowRevivalUI", 2f);
-            }
             else if (newState == GameState.GameOver)
             {
                 Invoke("ShowGameOverUI", 2);
+            }
+            else if (newState == GameState.PreGameOver)
+            {
+                Invoke("ShowRevivalUI", 2);
             }
         }
 
@@ -155,45 +222,60 @@ namespace CrashyChasy
             }
         }
 
+        void OnPlayerRevived()
+        {
+            RefreshHearts();
+        }
+
+        public void RefreshHearts()
+        {
+            if (GameManager.Instance != null && GameManager.Instance.playerController != null && hearts != null)
+            {
+                int health = GameManager.Instance.playerController.playerHealth;
+                for (int i = 0; i < hearts.Length; i++)
+                {
+                    hearts[i].SetActive(i < health);
+                }
+                currentHeartIndex = health - 1;
+            }
+        }
+
         void OnScoreUpdated(int newScore)
         {
-            scoreAnimator.Play("NewScore");
+            UpdateScoreDisplay();
+        }
+
+        void OnHighscoreUpdated(int newHighScore)
+        {
+            if (bestScore != null)
+            {
+                bestScore.text = bestScoreInRevivalPanel
+                    ? $"BEST SCORE: {newHighScore}"
+                    : newHighScore.ToString();
+            }
         }
 
         void Reset()
         {
-            revivalUI.SetActive(false);
             mainCanvas.SetActive(true);
             characterSelectionUI.SetActive(false);
             header.SetActive(false);
             title.SetActive(false);
             score.gameObject.SetActive(false);
+            RestoreBestScoreToHeader();
+            if (bestScore != null)
+                bestScore.gameObject.SetActive(false);
             newBestScore.SetActive(false);
             playBtn.SetActive(false);
             menuButtons.SetActive(false);
             dailyRewardBtn.SetActive(false);
+            revivalUI.SetActive(false);
             foreach ( var h in hearts)
             {
                 h.SetActive(false);
             }
-
-
-            // Enable or disable premium stuff
-            bool enablePremium = IsPremiumFeaturesEnabled();
-            leaderboardBtn.SetActive(enablePremium);
-            shareBtn.SetActive(enablePremium);
-            iapPurchaseBtn.SetActive(enablePremium);
-            removeAdsBtn.SetActive(enablePremium);
-            restorePurchaseBtn.SetActive(enablePremium);
-
-            // Hidden by default
-            storeUI.SetActive(false);
             settingsUI.SetActive(false);
-            shareUI.SetActive(false);
 
-            // These premium feature buttons are hidden by default
-            // and shown when certain criteria are met (e.g. rewarded ad is loaded)
-            watchRewardedAdBtn.gameObject.SetActive(false);
         }
 
         public void StartGame()
@@ -214,43 +296,59 @@ namespace CrashyChasy
         public void ShowStartUI()
         {
             settingsUI.SetActive(false);
+            RestoreBestScoreToHeader();
 
             header.SetActive(true);
             title.SetActive(true);
+            // Show the actual best (time) on the start screen
+            if (bestScore != null) bestScore.gameObject.SetActive(true);
             playBtn.SetActive(true);
             restartBtn.SetActive(false);
             menuButtons.SetActive(true);
-            shareBtn.SetActive(false);
             revivalUI.SetActive(false);
-            // If first launch: show "WatchForCoins" and "DailyReward" buttons if the conditions are met
+            // If first launch: show the daily reward button if available
             if (GameManager.GameCount == 0)
             {
-                ShowWatchForCoinsBtn();
                 ShowDailyRewardBtn();
             }
+
+            UpdateScoreDisplay();
         }
 
         public void ShowGameUI()
         {
+            RestoreBestScoreToHeader();
             header.SetActive(true);
             title.SetActive(false);
             score.gameObject.SetActive(true);
+            if (bestScore != null)
+                bestScore.gameObject.SetActive(false);
             playBtn.SetActive(false);
             menuButtons.SetActive(false);
             dailyRewardBtn.SetActive(false);
-            watchRewardedAdBtn.SetActive(false);
             revivalUI.SetActive(false);
-            for (int i = 0; i < GameManager.Instance.playerController.playerHealth;i++)
+            if (GameManager.Instance != null && GameManager.Instance.playerController != null && hearts != null)
             {
-                hearts[i].SetActive(true);
+                for (int i = 0; i < GameManager.Instance.playerController.playerHealth; i++)
+                {
+                    if (i < hearts.Length && hearts[i] != null)
+                    {
+                        hearts[i].SetActive(true);
+                    }
+                }
             }
+
+            UpdateScoreDisplay();
         }
 
         public void ShowGameOverUI()
         {
+            RestoreBestScoreToHeader();
             header.SetActive(true);
             title.SetActive(false);
             score.gameObject.SetActive(true);
+            if (bestScore != null)
+                bestScore.gameObject.SetActive(true);
             newBestScore.SetActive(ScoreManager.Instance.HasNewHighScore);
 
             playBtn.SetActive(false);
@@ -258,26 +356,10 @@ namespace CrashyChasy
             menuButtons.SetActive(true);
             settingsUI.SetActive(false);
             revivalUI.SetActive(false);
-
             // Show 'daily reward' button
             ShowDailyRewardBtn();
 
-            // Show these if premium features are enabled (and relevant conditions are met)
-            if (IsPremiumFeaturesEnabled())
-            {
-                ShowShareUI();
-                ShowWatchForCoinsBtn();
-            }
-        }
-
-        public void ShowRevivalUI()
-        {
-            revivalUI.SetActive(true);
-        }
-
-        public void HideRevivalUI()
-        {
-            revivalUI.SetActive(false);
+            UpdateScoreDisplay();
         }
 
         private void OnPlayerTakeDamage(int amount)
@@ -292,22 +374,6 @@ namespace CrashyChasy
                     return;
                 }
             }
-        }
-
-        void ShowWatchForCoinsBtn()
-        {
-            // Only show "watch for coins button" if a rewarded ad is loaded and premium features are enabled
-            #if EASY_MOBILE
-        if (IsPremiumFeaturesEnabled() && AdDisplayer.Instance.CanShowRewardedAd() && AdDisplayer.Instance.watchAdToEarnCoins)
-        {
-            watchRewardedAdBtn.SetActive(true);
-            watchRewardedAdBtn.GetComponent<Animator>().SetTrigger("activate");
-        }
-        else
-        {
-            watchRewardedAdBtn.SetActive(false);
-        }
-            #endif
         }
 
         void ShowDailyRewardBtn()
@@ -329,16 +395,6 @@ namespace CrashyChasy
             settingsUI.SetActive(false);
         }
 
-        public void ShowStoreUI()
-        {
-            storeUI.SetActive(true);
-        }
-
-        public void HideStoreUI()
-        {
-            storeUI.SetActive(false);
-        }
-
         public void ShowCharacterSelectionScene()
         {
             mainCanvas.SetActive(false);
@@ -351,26 +407,191 @@ namespace CrashyChasy
             characterSelectionUI.SetActive(false);
         }
 
-        public void WatchRewardedAdToEarnCoin()
+        public void ShowRevivalUI()
         {
-            #if EASY_MOBILE
-        // Hide the button
-        watchRewardedAdBtn.SetActive(false);
+            revivalUI.SetActive(true);
+            MoveBestScoreToRevivalPanel();
 
-        AdDisplayer.CompleteRewardedAdToEarnCoins += OnCompleteRewardedAdToEarnCoins;
-        AdDisplayer.Instance.ShowRewardedAdToEarnCoins();
-            #endif
+            if (bestScore != null)
+                bestScore.gameObject.SetActive(false);
         }
 
-        void OnCompleteRewardedAdToEarnCoins()
+        public void HideRevivalUI()
         {
-            #if EASY_MOBILE
-        // Unsubscribe
-        AdDisplayer.CompleteRewardedAdToEarnCoins -= OnCompleteRewardedAdToEarnCoins;
+            RestoreBestScoreToHeader();
+            RestoreRevivalPromptLayout();
+            if (bestScore != null)
+                bestScore.gameObject.SetActive(false);
+            revivalUI.SetActive(false);
+        }
 
-        // Give the coins!
-        ShowRewardUI(AdDisplayer.Instance.rewardedCoins);
-            #endif
+        private void MoveBestScoreToRevivalPanel()
+        {
+            if (revivalUI == null)
+                return;
+
+            Transform container = revivalUI.transform.Find("Container");
+            if (container == null)
+                return;
+            RectTransform containerRect = container as RectTransform;
+            Text prompt = container.Find("Text")?.GetComponent<Text>();
+            Text reviveTitle = container.Find("ReviveTitle")?.GetComponent<Text>();
+            Transform buttonRow = container.Find("ReviveButtonRow");
+            Transform reviveButton = buttonRow != null ? buttonRow.Find("RevivalBtn") : container.Find("RevivalBtn");
+            Transform exitButton = buttonRow != null ? buttonRow.Find("ExitBtn") : container.Find("ExitBtn");
+            if (prompt == null || reviveButton == null || exitButton == null)
+                return;
+
+            VerticalLayoutGroup layout = container.GetComponent<VerticalLayoutGroup>();
+            if (layout == null)
+                layout = container.gameObject.AddComponent<VerticalLayoutGroup>();
+
+            layout.padding = new RectOffset(5, 5, 5, 5);
+            layout.spacing = 5f;
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.childControlWidth = true;
+            layout.childControlHeight = false;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+
+            if (reviveTitle != null)
+                reviveTitle.gameObject.SetActive(false);
+            ConfigureLayoutElement(prompt.rectTransform, 24f);
+            prompt.alignment = TextAnchor.MiddleCenter;
+            prompt.horizontalOverflow = HorizontalWrapMode.Wrap;
+            prompt.verticalOverflow = VerticalWrapMode.Truncate;
+
+            if (revivalBestScore == null)
+            {
+                GameObject scoreObject = new GameObject("RevivalBestScore", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text), typeof(LayoutElement));
+                scoreObject.transform.SetParent(container, false);
+                revivalBestScore = scoreObject.GetComponent<Text>();
+                revivalBestScore.font = prompt.font;
+                revivalBestScore.fontSize = RevivalTextFontSize;
+                revivalBestScore.alignment = TextAnchor.MiddleCenter;
+                revivalBestScore.color = new Color(1f, 0.84f, 0.4f, 1f);
+                revivalBestScore.raycastTarget = false;
+                revivalBestScore.verticalOverflow = VerticalWrapMode.Overflow;
+                revivalBestScore.rectTransform.sizeDelta = new Vector2(
+                    revivalBestScore.rectTransform.sizeDelta.x, 36f);
+            }
+            ConfigureLayoutElement(revivalBestScore.rectTransform, 36f);
+
+            if (buttonRow == null)
+            {
+                GameObject rowObject = new GameObject("ReviveButtonRow", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
+                rowObject.transform.SetParent(container, false);
+                buttonRow = rowObject.transform;
+                reviveButton.SetParent(buttonRow, false);
+                exitButton.SetParent(buttonRow, false);
+            }
+
+            HorizontalLayoutGroup buttonLayout = buttonRow.GetComponent<HorizontalLayoutGroup>();
+            buttonLayout.spacing = 5f;
+            buttonLayout.childAlignment = TextAnchor.MiddleCenter;
+            buttonLayout.childControlWidth = false;
+            buttonLayout.childControlHeight = false;
+            buttonLayout.childForceExpandWidth = false;
+            buttonLayout.childForceExpandHeight = false;
+            ConfigureLayoutElement(reviveButton as RectTransform, 70f, 150f);
+            ConfigureLayoutElement(exitButton as RectTransform, 70f, 150f);
+            ConfigureLayoutElement(buttonRow as RectTransform, 70f);
+
+            revivalBestScore.transform.SetSiblingIndex(0);
+            prompt.transform.SetSiblingIndex(1);
+            buttonRow.SetSiblingIndex(2);
+            revivalBestScore.text = ScoreManager.Instance != null ? $"BEST SCORE: {ScoreManager.Instance.HighScore}" : "BEST SCORE";
+            LayoutRebuilder.ForceRebuildLayoutImmediate(container as RectTransform);
+        }
+
+        private static void ConfigureLayoutElement(RectTransform rect, float height, float width = -1f)
+        {
+            LayoutElement element = rect.GetComponent<LayoutElement>();
+            if (element == null)
+                element = rect.gameObject.AddComponent<LayoutElement>();
+
+            element.minHeight = height;
+            element.preferredHeight = height;
+            if (width > 0f)
+            {
+                element.minWidth = width;
+                element.preferredWidth = width;
+            }
+        }
+
+        private void CacheRevivalPromptLayout()
+        {
+            if (revivalPromptLayoutCached || revivalUI == null)
+                return;
+
+            Transform container = revivalUI.transform.Find("Container");
+            Transform prompt = container != null ? container.Find("Text") : null;
+            if (prompt == null)
+                return;
+
+            revivalPromptRect = prompt.GetComponent<RectTransform>();
+            if (revivalPromptRect == null)
+                return;
+
+            revivalPromptOriginalAnchorMin = revivalPromptRect.anchorMin;
+            revivalPromptOriginalAnchorMax = revivalPromptRect.anchorMax;
+            revivalPromptOriginalPivot = revivalPromptRect.pivot;
+            revivalPromptOriginalSizeDelta = revivalPromptRect.sizeDelta;
+            revivalPromptOriginalAnchoredPosition = revivalPromptRect.anchoredPosition;
+
+            Text promptText = revivalPromptRect.GetComponent<Text>();
+            if (promptText != null)
+            {
+                revivalPromptOriginalFontSize = promptText.fontSize;
+                revivalPromptOriginalAlignment = promptText.alignment;
+                revivalPromptOriginalHorizontalOverflow = promptText.horizontalOverflow;
+                revivalPromptOriginalVerticalOverflow = promptText.verticalOverflow;
+            }
+            revivalPromptLayoutCached = true;
+        }
+
+        private void RestoreRevivalPromptLayout()
+        {
+            if (!revivalPromptLayoutCached || revivalPromptRect == null)
+                return;
+
+            revivalPromptRect.anchorMin = revivalPromptOriginalAnchorMin;
+            revivalPromptRect.anchorMax = revivalPromptOriginalAnchorMax;
+            revivalPromptRect.pivot = revivalPromptOriginalPivot;
+            revivalPromptRect.sizeDelta = revivalPromptOriginalSizeDelta;
+            revivalPromptRect.anchoredPosition = revivalPromptOriginalAnchoredPosition;
+
+            Text promptText = revivalPromptRect.GetComponent<Text>();
+            if (promptText != null)
+            {
+                promptText.fontSize = revivalPromptOriginalFontSize;
+                promptText.alignment = revivalPromptOriginalAlignment;
+                promptText.horizontalOverflow = revivalPromptOriginalHorizontalOverflow;
+                promptText.verticalOverflow = revivalPromptOriginalVerticalOverflow;
+            }
+        }
+
+        private void RestoreBestScoreToHeader()
+        {
+            if (bestScore == null)
+                return;
+
+            if (bestScoreOriginalParent != null && bestScore.transform.parent != bestScoreOriginalParent)
+                bestScore.rectTransform.SetParent(bestScoreOriginalParent, false);
+
+            bestScore.rectTransform.anchorMin = bestScoreOriginalAnchorMin;
+            bestScore.rectTransform.anchorMax = bestScoreOriginalAnchorMax;
+            bestScore.rectTransform.pivot = bestScoreOriginalPivot;
+            bestScore.rectTransform.sizeDelta = bestScoreOriginalSizeDelta;
+            bestScore.rectTransform.anchoredPosition = bestScoreOriginalAnchoredPosition;
+
+            bestScoreInRevivalPanel = false;
+            bestScore.fontSize = bestScoreOriginalFontSize;
+            bestScore.color = bestScoreOriginalColor;
+            bestScore.alignment = bestScoreOriginalAlignment;
+            bestScore.horizontalOverflow = bestScoreOriginalHorizontalOverflow;
+            bestScore.verticalOverflow = bestScoreOriginalVerticalOverflow;
+            UpdateScoreDisplay();
         }
 
         public void GrabDailyReward()
@@ -401,75 +622,10 @@ namespace CrashyChasy
             rewardUI.GetComponent<RewardUIController>().Close();
         }
 
-        public void ShowLeaderboardUI()
+        public void ReviveForFree()
         {
-            #if EASY_MOBILE
-        if (GameServices.IsInitialized())
-        {
-            GameServices.ShowLeaderboardUI();
-        }
-        else
-        {
-#if UNITY_IOS
-            NativeUI.Alert("Service Unavailable", "The user is not logged in to Game Center.");
-#elif UNITY_ANDROID
-            GameServices.Init();
-            #endif
-        }
-            #endif
-        }
-
-        public void ShowAchievementsUI()
-        {
-            #if EASY_MOBILE
-        if (GameServices.IsInitialized())
-        {
-            GameServices.ShowAchievementsUI();
-        }
-        else
-        {
-#if UNITY_IOS
-            NativeUI.Alert("Service Unavailable", "The user is not logged in to Game Center.");
-#elif UNITY_ANDROID
-            GameServices.Init();
-            #endif
-        }
-            #endif
-        }
-
-        public void PurchaseRemoveAds()
-        {
-            #if EASY_MOBILE
-        InAppPurchaser.Instance.Purchase(InAppPurchaser.Instance.removeAds);
-            #endif
-        }
-
-        public void RestorePurchase()
-        {
-            #if EASY_MOBILE
-        InAppPurchaser.Instance.RestorePurchase();
-            #endif
-        }
-
-        public void ShowShareUI()
-        {
-            if (!ScreenshotSharer.Instance.disableSharing)
-            {
-                Texture2D texture = ScreenshotSharer.Instance.CapturedScreenshot;
-                shareUIController.ImgTex = texture;
-
-#if EASY_MOBILE
-            AnimatedClip clip = ScreenshotSharer.Instance.RecordedClip;
-            shareUIController.AnimClip = clip;
-#endif
-
-                shareUI.SetActive(true);
-            }
-        }
-
-        public void HideShareUI()
-        {
-            shareUI.SetActive(false);
+            GameManager.Instance.RevivalGame();
+            HideRevivalUI();
         }
 
         public void ToggleSound()
@@ -480,16 +636,6 @@ namespace CrashyChasy
         public void ToggleMusic()
         {
             SoundManager.Instance.ToggleMusic();
-        }
-
-        public void RateApp()
-        {
-            Utilities.RateApp();
-        }
-
-        public void OpenTwitterPage()
-        {
-            Utilities.OpenTwitterPage();
         }
 
         public void OpenFacebookPage()
@@ -530,52 +676,5 @@ namespace CrashyChasy
             }
         }
 
-        bool IsPremiumFeaturesEnabled()
-        {
-            return PremiumFeaturesManager.Instance != null && PremiumFeaturesManager.Instance.enablePremiumFeatures;
-        }
-
-        public void WatchRewardedAdToRecover()
-        {
-#if EASY_MOBILE
-#if !UNITY_EDITOR
-            // Hide the button
-            HideRevivalUI();
-
-            AdDisplayer.CompleteRewardedAdToRecoverLostGame += OnCompleteRewardedAdToRecover;
-            AdDisplayer.SkipedRewardedAdToRecoverLostGame += OnSkipRewardedAdToRecover;
-            AdDisplayer.Instance.ShowRewardedAdToRecoverLostGame();
-#else
-            GameManager.Instance.RevivalGame();
-            HideRevivalUI();
-#endif
-#endif
-        }
-
-        void OnCompleteRewardedAdToRecover()
-        {
-#if EASY_MOBILE
-            // Unsubscribe
-            AdDisplayer.CompleteRewardedAdToEarnCoins -= OnCompleteRewardedAdToRecover;
-            AdDisplayer.SkipedRewardedAdToRecoverLostGame -= OnSkipRewardedAdToRecover;
-
-            // Give the coins!
-
-            GameManager.Instance.RevivalGame();
-            HideRevivalUI();
-#endif
-        }
-
-        void OnSkipRewardedAdToRecover()
-        {
-#if EASY_MOBILE
-            // Unsubscribe
-            AdDisplayer.CompleteRewardedAdToEarnCoins -= OnCompleteRewardedAdToRecover;
-            AdDisplayer.SkipedRewardedAdToRecoverLostGame -= OnSkipRewardedAdToRecover;
-
-            HideRevivalUI();
-            GameManager.Instance.GameOver();
-#endif
-        }
     }
 }

@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace CrashyChasy
+namespace CarChaser
 {
     public class SoundManager : MonoBehaviour
     {

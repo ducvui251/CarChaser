@@ -1,7 +1,7 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
-namespace CrashyChasy
+namespace CarChaser
 {
     public class CoinController : MonoBehaviour
     {

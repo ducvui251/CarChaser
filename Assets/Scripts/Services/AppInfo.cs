@@ -1,7 +1,7 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
-namespace CrashyChasy
+namespace CarChaser
 {
     public class AppInfo : MonoBehaviour
     {
@@ -15,14 +15,6 @@ namespace CrashyChasy
 
         public string BUNDLE_ID = "[YOUR_BUNDLE_ID]";
         // app bundle id
-
-        [HideInInspector]
-        public string APPSTORE_LINK = "itms-apps://itunes.apple.com/app/id";
-        // App Store link
-
-        [HideInInspector]
-        public string PLAYSTORE_LINK = "market://details?id=";
-        // Google Play store link
 
         [HideInInspector]
         public string APPSTORE_SHARE_LINK = "https://itunes.apple.com/app/id";
@@ -41,15 +33,10 @@ namespace CrashyChasy
 
         public string FACEBOOK_ID = "[YOUR_FACEBOOK_PAGE_ID]";
 
-        public string TWITTER_NAME = "[YOUR_TWITTER_PAGE_NAME]";
-
         public string SUPPORT_EMAIL = "[YOUR_SUPPORT_EMAIL]";
 
         [HideInInspector]
         public string FACEBOOK_LINK = "https://facebook.com/";
-
-        [HideInInspector]
-        public string TWITTER_LINK = "https://twitter.com/";
 
         void Awake()
         {
@@ -66,12 +53,9 @@ namespace CrashyChasy
 
         void Start()
         {
-            APPSTORE_LINK += APPSTORE_ID;
-            PLAYSTORE_LINK += BUNDLE_ID;
             APPSTORE_SHARE_LINK += APPSTORE_ID;
             PLAYSTORE_SHARE_LINK += BUNDLE_ID;
             FACEBOOK_LINK += FACEBOOK_ID;
-            TWITTER_LINK += TWITTER_NAME;
         }
     }
 }

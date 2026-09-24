@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace CrashyChasy
+namespace CarChaser
 {
     public class PlayerController : CarController
     {
@@ -58,7 +58,7 @@ namespace CrashyChasy
         private bool blowUp = false;
         private float movingDistance;
         private Vector3 prePlayerPos;
-         void OnEnable()
+        void OnEnable()
         {
             GameManager.GameStateChanged += OnGameStateChanged;
             GameManager.RevivalGameEvent += OnRevivalGameEvent;
@@ -157,13 +157,7 @@ namespace CrashyChasy
         {
             if (GameManager.Instance != null && ScoreManager.Instance != null)
             {
-                movingDistance += Vector3.Distance(transform.position, prePlayerPos);
-                prePlayerPos = transform.position;
-                if (movingDistance >= GameManager.Instance.MovingDistancePerScore)
-                {
-                    ScoreManager.Instance.AddScore(1);
-                    movingDistance = 0;
-                }
+                ScoreManager.Instance.AddSurvivalTime(Time.fixedDeltaTime);
             }
         }
 

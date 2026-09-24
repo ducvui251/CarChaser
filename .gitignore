@@ -77,3 +77,16 @@ Assets/Plugins/PlasticSCM*/
 **/Assets/AddressableAssetsData/*/*.bin*
 Assets/StreamingAssets/aa.meta
 Assets/StreamingAssets/*/aa/
+
+# Local tools, references, and generated WebGL exports
+/.agent/
+/.kilo/
+/.opencode/
+/Development/
+/Image/
+/Release/
+/Assets/_Recovery/
+/screenshot_*.png
+
+# Unity editor-local metadata
+/ProjectSettings/SceneTemplateSettings.json

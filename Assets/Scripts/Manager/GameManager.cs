@@ -1,9 +1,9 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 using UnityEngine.SceneManagement;
 
-namespace CrashyChasy
+namespace CarChaser
 {
     public enum GameState
     {
@@ -73,9 +73,7 @@ namespace CrashyChasy
         {
             get { return 12 - increasingDiffValue; }
         }
-        [Header("Revival")]
-        [SerializeField]
-        private int revivalAmount = 1;
+        private const int FreeRevivesPerRun = 1;
         private int currentRevivalAmount;
 
         [Header("Score")]
@@ -140,7 +138,7 @@ namespace CrashyChasy
                 DestroyImmediate(Instance.gameObject);
                 Instance = this;
             }
-            currentRevivalAmount = revivalAmount;
+            currentRevivalAmount = FreeRevivesPerRun;
             CreateNewCharacter(CharacterManager.Instance.CurrentCharacterIndex);
         }
 
@@ -165,25 +163,10 @@ namespace CrashyChasy
         // Listens to the event when player dies and call GameOver
         void PlayerController_PlayerDied()
         {
-#if EASY_MOBILE
-#if !UNITY_EDITOR
-            if (currentRevivalAmount > 0 && AdDisplayer.Instance.CanShowRewardedAd())
-            {
-                PreGameOver();
-            }
-            else
-            {
-                GameOver();
-            }
-#else
             if (currentRevivalAmount <= 0)
                 GameOver();
             else
                 PreGameOver();
-    #endif
-#else
-            GameOver();
-#endif
         }
 
         // Make initial setup and preparations before the game can be played
@@ -264,6 +247,17 @@ namespace CrashyChasy
                 playerController.gameObject.SetActive(true);
         }
 
+        public void RevivalGame()
+        {
+            if (currentRevivalAmount <= 0 || GameState != GameState.PreGameOver)
+                return;
+
+            currentRevivalAmount--;
+            StartGame();
+            RevivalGameEvent();
+            UIManager.Instance.RefreshHearts();
+        }
+
         void CreateNewCharacter(int curChar)
         {
             if (playerController != null)
@@ -304,11 +298,5 @@ namespace CrashyChasy
             //Instantiate(enemyToSpawn, enemyToSpawn.transform.position, Quaternion.identity);
         }
 
-        public void RevivalGame()
-        {
-            currentRevivalAmount--;
-            StartGame();
-            RevivalGameEvent();
-        }
     }
 }

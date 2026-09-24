@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+using UnityEngine;
 
-namespace CrashyChasy
+namespace CarChaser
 {
     public class Player : MonoBehaviour
     {

@@ -1,7 +1,7 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
-namespace CrashyChasy
+namespace CarChaser
 {
     public class CameraController : MonoBehaviour
     {
@@ -118,6 +118,17 @@ namespace CrashyChasy
         IEnumerator WaitingPlayerController()
         {
             yield return new WaitForSeconds(0.05f);
+
+            float remainingWait = 2f;
+            while ((GameManager.Instance == null || GameManager.Instance.playerController == null) && remainingWait > 0f)
+            {
+                remainingWait -= Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            if (GameManager.Instance == null || GameManager.Instance.playerController == null)
+                yield break;
+
             playerTransform = GameManager.Instance.playerController.transform;
 
             if (offset != Vector3.zero)
